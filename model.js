@@ -13,17 +13,21 @@ export async function initializeModel() {
         // Set path for wasm files
         ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
 
-        const modelPath = './model.onnx'; // Using the local model
-        console.log(`Attempting to load local ONNX model from: ${modelPath}`);
+        const modelUrl = 'https://huggingface.co/LPX55/AI-Image-Detector-Deploy-ONNX/resolve/main/model.onnx'; 
+        console.log(`Attempting to load remote ONNX model from: ${modelUrl}`);
         
-        session = await ort.InferenceSession.create(modelPath, { executionProviders: ['wasm'] });
+        // Using a remote URL directly. ort.js handles fetching.
+        session = await ort.InferenceSession.create(modelUrl, { 
+            executionProviders: ['wasm'],
+            graphOptimizationLevel: 'all'
+        });
         
         modelReady = true;
         useFallbackDetection = false;
-        console.log(`ONNX model loaded successfully from local path.`);
+        console.log(`ONNX model loaded successfully from remote URL.`);
 
     } catch (e) {
-        console.error("Fatal: Could not load local ONNX model, using fallback detection.", e);
+        console.error("Fatal: Could not load remote ONNX model, using fallback detection.", e);
         // Use advanced fallback detection instead of failing
         useFallbackDetection = true;
         modelReady = true;
