@@ -7,13 +7,32 @@ export function createAnalysisLoader() {
     `;
 }
 
-export function createResultDisplay({ score, label }) {
+export function createResultDisplay({ score, label, analysis }) {
     const isAi = label === 'Likely AI-generated';
     const confidenceColor = isAi ? 'bg-red-500' : 'bg-green-500';
     const confidenceText = isAi ? 'AI Confidence' : 'Real Confidence';
     const interpretation = isAi
         ? 'Our analysis suggests this image has characteristics commonly found in AI-generated content.'
         : 'Our analysis suggests this image appears to be a real photograph with natural characteristics.';
+
+    let analysisHtml = '<div class="space-y-3 pt-4 border-t border-gray-600/50">';
+    
+    if (analysis) {
+        for (const key in analysis) {
+            const item = analysis[key];
+            const itemConfidenceColor = item.score > 50 ? 'bg-red-500/50' : 'bg-green-500/50';
+            analysisHtml += `
+                <div class="p-3 bg-gray-900/50 rounded-md">
+                    <div class="flex justify-between items-center mb-1">
+                        <h4 class="font-semibold text-gray-200">${item.name}</h4>
+                        <span class="text-xs font-mono px-2 py-0.5 rounded-full ${itemConfidenceColor} text-white">${item.score}% AI</span>
+                    </div>
+                    <p class="text-sm text-gray-400">${item.conclusion}</p>
+                </div>
+            `;
+        }
+    }
+    analysisHtml += '</div>';
 
     return `
         <div class="p-6 bg-gray-700/50 rounded-lg space-y-4">
@@ -24,7 +43,9 @@ export function createResultDisplay({ score, label }) {
             <div class="text-center text-gray-300">
                 <span class="font-bold">${score}%</span> ${confidenceText}
             </div>
-            <p class="text-sm text-gray-400 text-center">${interpretation}</p>
+            <p class="text-sm text-gray-400 text-center pb-4">${interpretation}</p>
+            
+            ${analysis ? analysisHtml : ''}
         </div>
     `;
 }

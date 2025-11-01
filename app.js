@@ -77,7 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
         metadataButton.disabled = true;
 
         try {
-            const result = await analyzeImage(imagePreview);
+            const metadata = await extractMetadata(uploadedFile);
+            const result = await analyzeImage(imagePreview, metadata);
             resultContainer.innerHTML = createResultDisplay(result);
         } catch (error) {
             console.error("Analysis failed:", error);
