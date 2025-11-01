@@ -14,8 +14,16 @@ export async function initializeModel() {
         ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
 
         const modelPath = '/model.onnx';
-        // Explicitly use the 'wasm' execution provider.
-        session = await ort.InferenceSession.create(modelPath, { executionProviders: ['wasm'] });
+        
+        // --- CHANGE: Fetch model as a buffer first to avoid potential CORS issues ---
+        const response = await fetch(modelPath);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+        const modelBuffer = await response.arrayBuffer();
+        
+        // Create the session from the ArrayBuffer instead of the path.
+        session = await ort.InferenceSession.create(modelBuffer, { executionProviders: ['wasm'] });
         modelReady = true;
         console.log("ONNX model initialized successfully.");
     } catch (e) {
