@@ -9,14 +9,20 @@ let modelReady = false;
  */
 export async function initializeModel() {
     try {
-        // Use an absolute path to the model for reliability
+        // Explicitly set the path for WASM files to ensure they are loaded correctly from the CDN.
+        // This is a common fix for model loading issues with onnxruntime-web.
+        ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
+
         const modelPath = '/model.onnx';
-        session = await ort.InferenceSession.create(modelPath);
+        // Explicitly use the 'wasm' execution provider.
+        session = await ort.InferenceSession.create(modelPath, { executionProviders: ['wasm'] });
         modelReady = true;
         console.log("ONNX model initialized successfully.");
     } catch (e) {
         console.error("Failed to initialize ONNX model.", e);
-        throw new Error("Could not load the detection model. Please try refreshing the page.");
+        // The error object `e` might have useful details. We'll pass its message.
+        const errorMessage = e.message || "An unknown error occurred.";
+        throw new Error(`Could not load the detection model. This might be due to a network issue or browser incompatibility. Please try refreshing the page. (Details: ${errorMessage})`);
     }
 }
 

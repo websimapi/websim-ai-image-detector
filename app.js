@@ -27,9 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // -- App Initialization --
     async function main() {
-        await initializeModel();
-        modelLoader.classList.add('hidden');
-        detectorUi.classList.remove('hidden');
+        try {
+            await initializeModel();
+            modelLoader.classList.add('hidden');
+            detectorUi.classList.remove('hidden');
+        } catch (error) {
+            console.error("Initialization failed:", error);
+            modelLoader.innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center">
+                    <h3 class="text-xl font-bold text-red-400 mb-2">Initialization Failed</h3>
+                    <p class="text-sm text-gray-400">Could not load the AI detection model.</p>
+                    <pre class="mt-4 p-3 bg-gray-900 rounded-md text-left text-xs text-red-300 max-w-full overflow-x-auto">${error.message}</pre>
+                </div>
+            `;
+        }
     }
 
     // -- Event Handlers --
