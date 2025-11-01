@@ -12,21 +12,41 @@ export async function initializeModel() {
     try {
         ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
 
-        // Try loading the real model from HuggingFace via CORS proxy
-        const modelUrl = 'https://corsproxy.io/?https://huggingface.co/prithivMLmods/Deepfake-Detection-Exp-02-21-ONNX/resolve/main/model.onnx';
+        // Try multiple model URLs in order of preference
+        const modelUrls = [
+            // Quantized model (smaller, faster for browsers)
+            'https://huggingface.co/prithivMLmods/Deepfake-Detection-Exp-02-21-ONNX/resolve/main/onnx/model_q4f16.onnx',
+            // Alternative paths
+            'https://huggingface.co/prithivMLmods/Deepfake-Detection-Exp-02-21-ONNX/resolve/main/model.onnx',
+            'https://huggingface.co/prithivMLmods/Deepfake-Detection-Exp-02-21-ONNX/resolve/main/onnx/model.onnx',
+        ];
         
-        console.log("Attempting to load ONNX model from HuggingFace...");
-        const response = await fetch(modelUrl);
+        let modelBuffer = null;
+        let successUrl = null;
         
-        if (!response.ok) {
-            throw new Error(`Failed to fetch model: ${response.statusText}`);
+        for (const modelUrl of modelUrls) {
+            try {
+                console.log(`Attempting to load ONNX model from: ${modelUrl}`);
+                const response = await fetch(modelUrl);
+                
+                if (response.ok) {
+                    modelBuffer = await response.arrayBuffer();
+                    successUrl = modelUrl;
+                    break;
+                }
+            } catch (err) {
+                console.warn(`Failed to load from ${modelUrl}:`, err.message);
+            }
         }
         
-        const modelBuffer = await response.arrayBuffer();
+        if (!modelBuffer) {
+            throw new Error('Failed to fetch model from any URL');
+        }
+        
         session = await ort.InferenceSession.create(modelBuffer, { executionProviders: ['wasm'] });
         modelReady = true;
         useFallbackDetection = false;
-        console.log("ONNX model loaded successfully from HuggingFace.");
+        console.log(`ONNX model loaded successfully from: ${successUrl}`);
     } catch (e) {
         console.warn("Could not load ONNX model, using fallback detection algorithm:", e.message);
         // Use advanced fallback detection instead of failing
