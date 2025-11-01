@@ -9,8 +9,8 @@ let modelReady = false;
  */
 export async function initializeModel() {
     try {
-        // Use a local copy of the model for reliability and offline capability
-        const modelPath = './model.onnx';
+        // Use an absolute path to the model for reliability
+        const modelPath = '/model.onnx';
         session = await ort.InferenceSession.create(modelPath);
         modelReady = true;
         console.log("ONNX model initialized successfully.");
