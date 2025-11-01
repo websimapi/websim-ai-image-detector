@@ -15,7 +15,7 @@ export async function initializeModel() {
         const wasmDistPath = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
         ort.env.wasm.wasmPaths = wasmDistPath;
         ort.env.wasm.numThreads = 1; // Use single thread for broader compatibility
-        ort.env.wasm.proxy = true; // Helps with loading worker script in some environments
+        ort.env.wasm.proxy = false; // Run on main thread to avoid worker CORS issues
 
         const modelPath = './model.onnx'; // Using the local model
         console.log(`Attempting to load local ONNX model from: ${modelPath}`);
