@@ -10,49 +10,24 @@ let useFallbackDetection = false;
  */
 export async function initializeModel() {
     try {
+        // Set path for wasm files
         ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/";
 
-        // Try multiple model URLs in order of preference
-        const modelUrls = [
-            // Quantized model (smaller, faster for browsers)
-            'https://huggingface.co/prithivMLmods/Deepfake-Detection-Exp-02-21-ONNX/resolve/main/onnx/model_q4f16.onnx',
-            // Alternative paths
-            'https://huggingface.co/prithivMLmods/Deepfake-Detection-Exp-02-21-ONNX/resolve/main/model.onnx',
-            'https://huggingface.co/prithivMLmods/Deepfake-Detection-Exp-02-21-ONNX/resolve/main/onnx/model.onnx',
-        ];
+        const modelPath = './model.onnx'; // Using the local model
+        console.log(`Attempting to load local ONNX model from: ${modelPath}`);
         
-        let modelBuffer = null;
-        let successUrl = null;
+        session = await ort.InferenceSession.create(modelPath, { executionProviders: ['wasm'] });
         
-        for (const modelUrl of modelUrls) {
-            try {
-                console.log(`Attempting to load ONNX model from: ${modelUrl}`);
-                const response = await fetch(modelUrl);
-                
-                if (response.ok) {
-                    modelBuffer = await response.arrayBuffer();
-                    successUrl = modelUrl;
-                    break;
-                }
-            } catch (err) {
-                console.warn(`Failed to load from ${modelUrl}:`, err.message);
-            }
-        }
-        
-        if (!modelBuffer) {
-            throw new Error('Failed to fetch model from any URL');
-        }
-        
-        session = await ort.InferenceSession.create(modelBuffer, { executionProviders: ['wasm'] });
         modelReady = true;
         useFallbackDetection = false;
-        console.log(`ONNX model loaded successfully from: ${successUrl}`);
+        console.log(`ONNX model loaded successfully from local path.`);
+
     } catch (e) {
-        console.warn("Could not load ONNX model, using fallback detection algorithm:", e.message);
+        console.error("Fatal: Could not load local ONNX model, using fallback detection.", e);
         // Use advanced fallback detection instead of failing
         useFallbackDetection = true;
         modelReady = true;
-        console.log("Fallback detection algorithm initialized.");
+        console.log("Fallback detection algorithm initialized as a backup.");
     }
 }
 
@@ -202,10 +177,13 @@ export async function analyzeImage(imageElement, metadata = {}) {
         const tensorData = preprocessImage(imageElement);
         const tensor = new ort.Tensor('float32', tensorData, [1, 3, 224, 224]);
         
-        const feeds = { 'input': tensor };
+        // The input tensor name must match the model's expected name.
+        // For LPX55/AI-Image-Detector-Deploy-ONNX, it's 'pixel_values'.
+        const feeds = { 'pixel_values': tensor };
         const results = await session.run(feeds);
         
-        const outputData = results.output.data;
+        // The output tensor name is 'logits' for this model.
+        const outputData = results.logits.data;
         const softmax = (logits) => {
             const maxLogit = Math.max(...logits);
             const exps = logits.map(l => Math.exp(l - maxLogit));

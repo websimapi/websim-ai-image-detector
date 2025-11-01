@@ -1,2 +1,2 @@
-description: "A state-of-the-art AI image detection model (Deepfake-Detection-Exp-02-21-ONNX from Hugging Face) in ONNX format, ready for browser-side inference. This Vision Transformer model is highly accurate at distinguishing between real and synthetic images."
+description: "A state-of-the-art AI image detection model (AI-Image-Detector-Deploy-ONNX from Hugging Face user LPX55) in ONNX format, ready for browser-side inference. This ConvNeXt model is lightweight and accurate at distinguishing between real and synthetic images."
 
