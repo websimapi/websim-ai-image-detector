@@ -17,3 +17,12 @@
     line-height: 1;
 }
 
+.loader-small {
+    border: 3px solid #6B7280; /* gray-500 */
+    border-top: 3px solid #FFFFFF;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+

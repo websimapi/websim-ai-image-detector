@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const metadataContent = document.getElementById('metadata-content');
     const closeModal = document.getElementById('close-modal');
 
+    // Generator UI elements
+    const promptInput = document.getElementById('prompt-input');
+    const generateButton = document.getElementById('generate-button');
+    const generateText = document.getElementById('generate-text');
+    const generateLoader = document.getElementById('generate-loader');
+
     let uploadedFile = null;
 
     // -- App Initialization --
@@ -88,6 +94,56 @@ document.addEventListener('DOMContentLoaded', () => {
             metadataButton.disabled = false;
         }
     });
+
+    generateButton.addEventListener('click', async () => {
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+            alert('Please enter a prompt to generate an image.');
+            return;
+        }
+
+        // --- Start loading state ---
+        generateButton.disabled = true;
+        generateText.classList.add('hidden');
+        generateLoader.classList.remove('hidden');
+        resultContainer.innerHTML = ''; // Clear previous results
+
+        try {
+            // 1. Generate the image
+            resultContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-6 space-y-3 bg-gray-700/50 rounded-lg">
+                    <div class="loader"></div>
+                    <p class="text-gray-300">Generating AI image... (this can take a moment)</p>
+                </div>`;
+            
+            const genResult = await websim.imageGen({ prompt });
+
+            // 2. Convert URL to a File object
+            const response = await fetch(genResult.url);
+            const blob = await response.blob();
+            const generatedFile = new File([blob], "ai-generated-image.png", { type: blob.type || 'image/png' });
+
+            // 3. Feed the file into the existing UI flow
+            handleFileSelect(generatedFile);
+            
+            // 4. Automatically trigger detection
+            // A short delay to ensure the image preview is rendered
+            setTimeout(() => {
+                detectButton.click();
+                previewContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+
+        } catch (error) {
+            console.error("Image generation failed:", error);
+            resultContainer.innerHTML = `<p class="text-red-400 text-center">An error occurred during image generation.</p>`;
+        } finally {
+            // --- End loading state ---
+            generateButton.disabled = false;
+            generateText.classList.remove('hidden');
+            generateLoader.classList.add('hidden');
+        }
+    });
+
 
     metadataButton.addEventListener('click', async () => {
         if (!uploadedFile) return;
