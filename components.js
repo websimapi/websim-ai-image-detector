@@ -25,7 +25,7 @@ export function createResultDisplay({ score, label, analysis }) {
                 <div class="p-3 bg-gray-900/50 rounded-md">
                     <div class="flex justify-between items-center mb-1">
                         <h4 class="font-semibold text-gray-200">${item.name}</h4>
-                        <span class="text-xs font-mono px-2 py-0.5 rounded-full ${itemConfidenceColor} text-white">${item.score}% AI</span>
+                        <span class="text-xs font-mono px-2 py-0.5 rounded-full ${item.score > 50 ? 'bg-red-500/50' : 'bg-green-500/50'} text-white">${item.score}% AI</span>
                     </div>
                     <p class="text-sm text-gray-400">${item.conclusion}</p>
                 </div>

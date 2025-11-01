@@ -25,17 +25,37 @@ export function extractMetadata(file) {
 }
 
 /**
- * Prepares image data for analysis by drawing it to a canvas.
+ * Prepares image data for the ONNX model.
+ * Resizes to 224x224, normalizes, and converts to a CHW tensor format.
  * @param {HTMLImageElement} imageElement - The <img> element to process.
- * @returns {ImageData} The pixel data from the canvas.
+ * @returns {Float32Array} The preprocessed image data as a flat Float32Array.
  */
 export function preprocessImage(imageElement) {
     const canvas = document.createElement('canvas');
-    // For performance, we can analyze a smaller version.
-    const size = 128; 
+    const size = 224;
     canvas.width = size;
     canvas.height = size;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const ctx = canvas.getContext('2d');
     ctx.drawImage(imageElement, 0, 0, size, size);
-    return ctx.getImageData(0, 0, size, size);
+    const imageData = ctx.getImageData(0, 0, size, size);
+    const { data } = imageData;
+
+    // Create a new Float32Array for the tensor data
+    const tensorData = new Float32Array(3 * size * size);
+    
+    // ImageNet mean and std deviation for normalization
+    const mean = [0.485, 0.456, 0.406];
+    const std = [0.229, 0.224, 0.225];
+
+    // NCHW format
+    for (let i = 0; i < size * size; i++) {
+        // Red channel
+        tensorData[i] = (data[i * 4] / 255 - mean[0]) / std[0];
+        // Green channel
+        tensorData[i + size * size] = (data[i * 4 + 1] / 255 - mean[1]) / std[1];
+        // Blue channel
+        tensorData[i + size * size * 2] = (data[i * 4 + 2] / 255 - mean[2]) / std[2];
+    }
+    
+    return tensorData;
 }
