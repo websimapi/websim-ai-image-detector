@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-gray-100 flex items-center justify-center min-h-screen font-sans">
+
+    <div id="app-container" class="w-full max-w-2xl mx-auto p-4 md:p-8 bg-gray-800 rounded-2xl shadow-2xl space-y-6">
+
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-cyan-400">Offline AI Image Detector</h1>
+            <p class="text-gray-400 mt-1">Is it real or AI-generated? Find out instantly, right in your browser.</p>
+        </header>
+
+        <main id="main-content" class="space-y-6">
+            <!-- Initial State: Model Loading -->
+            <div id="model-loader" class="flex flex-col items-center justify-center p-8 space-y-4 text-center border-2 border-dashed border-gray-600 rounded-lg">
+                <div class="loader"></div>
+                <p class="text-lg text-gray-300">Initializing detection model...</p>
+                <p class="text-sm text-gray-500">This happens only once and runs entirely on your device.</p>
+            </div>
+
+            <!-- Main UI: Hidden until model is ready -->
+            <div id="detector-ui" class="hidden space-y-6">
+                <!-- Image Upload Area -->
+                <div id="upload-area" class="relative border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-cyan-400 transition-colors">
+                    <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/jpeg, image/png, image/webp">
+                    <div class="flex flex-col items-center space-y-2 text-gray-400">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-4-4V6a4 4 0 014-4h10a4 4 0 014 4v6a4 4 0 01-4 4H7z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 16v1.5a2.5 2.5 0 005 0V16m-5-1.5a2.5 2.5 0 015 0V16"></path></svg>
+                        <p class="text-lg">Drag & drop an image here</p>
+                        <p class="text-sm">or <span class="text-cyan-400 font-semibold">click to browse</span></p>
+                    </div>
+                </div>
+
+                <!-- Image Preview & Controls -->
+                <div id="preview-container" class="hidden flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                    <div class="w-full md:w-1/2">
+                         <img id="image-preview" src="#" alt="Image preview" class="rounded-lg shadow-lg w-full h-auto object-cover max-h-64">
+                    </div>
+                    <div id="controls" class="w-full md:w-1/2 flex flex-col space-y-3">
+                        <button id="detect-button" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition-colors text-lg disabled:bg-gray-500 disabled:cursor-not-allowed">Detect AI</button>
+                        <button id="metadata-button" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed">View Metadata</button>
+                    </div>
+                </div>
+
+                <!-- Results Area -->
+                <div id="result-container">
+                    <!-- Results will be injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Metadata Modal -->
+    <div id="metadata-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg p-6 relative">
+            <button id="close-modal" class="absolute top-3 right-3 text-gray-400 hover:text-white">&times;</button>
+            <h2 class="text-xl font-bold mb-4 text-cyan-400">Image Metadata (EXIF)</h2>
+            <div id="metadata-content" class="text-left bg-gray-900 p-4 rounded-md max-h-96 overflow-y-auto text-sm font-mono"></div>
+        </div>
+    </div>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "./app.js": "./app.js",
+            "./model.js": "./model.js",
+            "./utils.js": "./utils.js",
+            "./components.js": "./components.js"
+        }
+    }
+    </script>
+    <script type="module" src="./app.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
